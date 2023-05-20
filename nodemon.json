@@ -1,9 +1,0 @@
-{
-    "env":{
-        "MONGO_USER":"user",
-        "MONGO_PASSWORD":"BrickBuster77",
-        "DATABASE_NAME":"nfchat",
-        "PORT":8080,
-        "SECRET_KEY":"supersecret"
-    }
-}
