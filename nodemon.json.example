@@ -4,6 +4,10 @@
         "MONGO_PASSWORD":"",
         "DATABASE_NAME":"",
         "PORT":8080,
-        "SECRET_KEY":""
+        "SECRET_KEY":"",
+        "RABBITMQ_URL":"",
+        "RABBITMQ_USERNAME":"",
+        "RABBITMQ_PASSWORD":"",
+        "QUEUE_NAME":""
     }
 }
