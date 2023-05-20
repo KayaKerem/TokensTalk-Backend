@@ -39,7 +39,7 @@ exports.processCollections = async (userAddress) => {
 
   const result = [];
   const length = collections?.length;
-  for (var i = 0; i < length; i++) {
+  for (var i = 300; i < 400; i++) {
     if (!collections[i]?.contract_address) {
       continue;
     }
@@ -69,6 +69,8 @@ exports.processCollections = async (userAddress) => {
                   s?.token_uri
               );
               const d2 = await f.json();
+              //   console.log(d2);
+              //   console.log(JSON.parse(d2.meta));
               result.push({
                 r: d2,
                 label: collections[i].label,

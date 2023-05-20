@@ -4,24 +4,13 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const publisher = require("../services/publisher");
 
-// const redisOptions = {
-//   socket: {
-//     host: "localhost",
-//     port: 32769,
-//   },
-//   password: "redispw",
-// };
 exports.register = async (req, res, next) => {
   const wallet_address = req.body.wallet_address;
   const user_name = req.body.user_name;
   const avatar_url = req.body.avatar_url;
   const password = req.body.password;
-  // const redis = require("../redisServer").init();
 
   try {
-    // const redisClient = redis.createClient(redisOptions);
-    // await redisClient.connect();
-
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const userExists = await User.findOne({ wallet_address: wallet_address });
@@ -46,18 +35,7 @@ exports.register = async (req, res, next) => {
     if (!result) {
       throw new Error("Cannot appended to queue");
     }
-    // await redisClient.set(userId, wallet_address, async (err, reply) => {
-    //   if (err) {
-    //     console.error("Data store error : ", err);
-    //   } else {
-    //     console.log("Redis data stored successfully");
-    //     await redisClient.publish(
-    //       "nft_scan",
-    //       JSON.stringify({ userId: wallet_address })
-    //     );
-    //   }
-    // });
-    // await redisClient.disconnect();
+
     res.json({
       message: "User registered successfully",
       user: user,
@@ -73,7 +51,7 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   const wallet_address = req.body.wallet_address;
   const password = req.body.password;
-  //  ≈
+
   try {
     const user = await User.findOne({
       wallet_address: wallet_address,
@@ -81,6 +59,9 @@ exports.login = async (req, res, next) => {
 
     if (!user) {
       //user kaydolmamış
+      const error = new Error("User hasn't yet registered");
+      error.statusCode = 409;
+      throw error;
     }
 
     const check = await bcrypt.compare(password, user.password);
@@ -90,7 +71,7 @@ exports.login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY);
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY);
     res.json({
       message: "User logged in successfully",
       userId: user._id,
@@ -117,6 +98,28 @@ exports.getAvatars = async (req, res, next) => {
         message: "success",
         avatars: filesPath,
       });
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.setAvatar = async (req, res, next) => {
+  const new_url = req.body.avatar_url;
+  const userId = req.body.userId;
+
+  try {
+    const user = await User.findById(userId);
+
+    user.avatar_url = new_url;
+
+    await user.save();
+    res.json({
+      message: "success",
+      user: user,
     });
   } catch (err) {
     if (!err.statusCode) {

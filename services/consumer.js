@@ -1,7 +1,7 @@
 const amqp = require("amqplib");
 const nftScanner = require("./nftScanner");
-// const Game = require("../models/game");
 const User = require("../models/user");
+const Chatroom = require("../models/chatroom");
 const queueName = process.env.QUEUE_NAME;
 
 async function createChannelAndConsume() {
@@ -34,19 +34,46 @@ async function createChannelAndConsume() {
           const user = await User.findOne({
             wallet_address: data.wallet_address,
           });
-          result.forEach((item) => {
+
+          //   result.forEach((item) => {
+          //     user.nfts.push({
+          //       collection: item.label,
+          //       name: item.r.meta.name,
+          //       description: item.r.meta.description,
+          //       image_url: item.r.rawImageUrl,
+          //       contract_address: item.contract_address,
+          //     });
+          //     list.push(item.contract_address);
+          //   });
+          for (const item of result) {
             user.nfts.push({
               collection: item.label,
               name: item.r.meta.name,
               description: item.r.meta.description,
               image_url: item.r.rawImageUrl,
-              contract_address: item.contract_address,
+              contract_address: item?.contract_address ?? "",
             });
+
+            let chtroom = await Chatroom.findOne({
+              contract_address: item?.contract_address ?? "",
+            });
+            if (!chtroom) {
+              chtroom = new Chatroom({
+                name: item.label,
+                avatar_url: item.r.rawImageUrl,
+                contract_address: item?.contract_address ?? "",
+              });
+            }
             user.chatrooms.push({
-              contract_address: item.contract_address,
+              contract_address: item?.contract_address ?? "",
+              chatroomId: chtroom._id,
             });
-          });
+            chtroom.users.push(user._id);
+            await chtroom.save();
+          }
+
           await user.save();
+
           //   const game = await Game.findById(data.game_id);
           //   if (game) {
           //     //tarih kontrolü
