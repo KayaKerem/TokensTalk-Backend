@@ -10,7 +10,7 @@ function stringToBytes(str) {
   return bytes.join("");
 }
 
-exports.getCollections = async (userAddress) =>
+const getCollections = async (userAddress) =>
   new Promise((resolve, reject) => {
     fetch(`https://api.mintscan.io/v1/juno/wasm/nft/${userAddress}/collections`)
       .then((res) => res.json())
@@ -34,15 +34,16 @@ const createURL = (contract_address, userAddress) => {
   );
 };
 
-exports.processCollections = async (collections, userAddress) => {
+exports.processCollections = async (userAddress) => {
+  const { contracts: collections } = await getCollections();
+
   const result = [];
   const length = collections?.length;
-
   for (var i = 0; i < length; i++) {
     if (!collections[i]?.contract_address) {
       continue;
     }
-    const length = collections?.length;
+
     await fetch(createURL(collections[i].contract_address, userAddress))
       .then((res) => res.json())
       .then(async (res) => {
@@ -68,7 +69,11 @@ exports.processCollections = async (collections, userAddress) => {
                   s?.token_uri
               );
               const d2 = await f.json();
-              result.push({ r: d2, label: collections[i].label });
+              result.push({
+                r: d2,
+                label: collections[i].label,
+                contract_address: collections[i].contract_address,
+              });
             } catch (err) {
               console.log(err);
             }

@@ -9,6 +9,7 @@ const messageRoutes = require("./routes/message");
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.lalgaf5.mongodb.net/${process.env.DATABASE_NAME}?w=majority`;
 const jwt = require("jsonwebtoken");
 const app = express();
+
 // const Message = require("./models/message");
 
 //CORS Policy
@@ -24,7 +25,7 @@ app.use(helmet());
 app.use(compression());
 
 app.use((error, req, res, next) => {
-  logger.error(error);
+  console.log(error);
   const status = error.statusCode;
   const message = error.message;
   const data = error.data;
@@ -41,8 +42,10 @@ mongoose
     console.log("Mongodb Connected");
   })
   .catch((err) => {
-    logger.error(err);
+    console.log(err);
   });
+
+const consumer = require("./services/consumer");
 
 const server = app.listen(process.env.PORT, () => {
   console.log("Server is running on :", process.env.PORT);
@@ -52,8 +55,7 @@ const Message = mongoose.model("Message");
 
 const User = mongoose.model("User");
 
-const { Server } = require("socket.io");
-const io = new Server(server);
+const io = require("./socket").init(server);
 
 io.use((socket, next) => {
   try {

@@ -37,6 +37,17 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    chatrooms: [
+      {
+        chatroomId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Chatroom",
+        },
+        contract_address: {
+          type: String,
+        },
+      },
+    ],
   },
 
   { timestamps: true }

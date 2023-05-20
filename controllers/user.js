@@ -2,14 +2,26 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const publisher = require("../services/publisher");
 
+// const redisOptions = {
+//   socket: {
+//     host: "localhost",
+//     port: 32769,
+//   },
+//   password: "redispw",
+// };
 exports.register = async (req, res, next) => {
   const wallet_address = req.body.wallet_address;
   const user_name = req.body.user_name;
   const avatar_url = req.body.avatar_url;
   const password = req.body.password;
+  // const redis = require("../redisServer").init();
 
   try {
+    // const redisClient = redis.createClient(redisOptions);
+    // await redisClient.connect();
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const userExists = await User.findOne({ wallet_address: wallet_address });
@@ -27,7 +39,25 @@ exports.register = async (req, res, next) => {
       password: hashedPassword,
     });
     await user.save();
-
+    // const userId = user._id.toString();
+    const result = await publisher({
+      wallet_address: wallet_address,
+    });
+    if (!result) {
+      throw new Error("Cannot appended to queue");
+    }
+    // await redisClient.set(userId, wallet_address, async (err, reply) => {
+    //   if (err) {
+    //     console.error("Data store error : ", err);
+    //   } else {
+    //     console.log("Redis data stored successfully");
+    //     await redisClient.publish(
+    //       "nft_scan",
+    //       JSON.stringify({ userId: wallet_address })
+    //     );
+    //   }
+    // });
+    // await redisClient.disconnect();
     res.json({
       message: "User registered successfully",
       user: user,
@@ -87,6 +117,24 @@ exports.getAvatars = async (req, res, next) => {
         message: "success",
         avatars: filesPath,
       });
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getChatrooms = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findOne({ userId: userId });
+    const chatrooms = user.chatrooms;
+
+    res.json({
+      message: "Chats fetched successfully",
+      chatrooms: chatrooms,
     });
   } catch (err) {
     if (!err.statusCode) {

@@ -47,3 +47,18 @@ exports.getAllChatrooms = async (req, res) => {
     next(err);
   }
 };
+
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    const chatId = req.params.chatId;
+
+    const users = Chatroom.find({ chatId: chatId }).users;
+
+    res.json({ message: "Users fetched successfully", users: users });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
