@@ -13,6 +13,8 @@ const app = express();
 // const Message = require("./models/message");
 
 //CORS Policy
+app.use(bodyParser.json());
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
@@ -20,7 +22,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(bodyParser.json());
 app.use(helmet());
 app.use(compression());
 
@@ -36,6 +37,10 @@ app.use("/user", userRoutes);
 app.use("/chatroom", chatroomRoutes);
 
 app.use("/message", messageRoutes);
+app.route("/resetDB").get(async (req, res) => {
+  await User.deleteMany({});
+  res.send("Deleted");
+});
 mongoose
   .connect(MONGODB_URI, { serverSelectionTimeoutMS: 20000 })
   .then((result) => {
@@ -46,6 +51,7 @@ mongoose
   });
 
 const consumer = require("./services/consumer");
+const user = require("./models/user");
 
 const server = app.listen(process.env.PORT, () => {
   console.log("Server is running on :", process.env.PORT);

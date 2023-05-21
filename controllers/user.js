@@ -7,7 +7,7 @@ const publisher = require("../services/publisher");
 exports.register = async (req, res, next) => {
   const wallet_address = req.body.wallet_address;
   const user_name = req.body.user_name;
-  const avatar_url = req.body.avatar_url;
+  const avatar_url = req.body.avatar_url ?? "u";
   const password = req.body.password;
 
   try {
@@ -49,12 +49,12 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
-  const wallet_address = req.body.wallet_address;
+  const user_name = req.body.user_name;
   const password = req.body.password;
 
   try {
     const user = await User.findOne({
-      wallet_address: wallet_address,
+      user_name: user_name,
     });
 
     if (!user) {
