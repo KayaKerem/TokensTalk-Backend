@@ -7,7 +7,7 @@ const publisher = require("../services/publisher");
 exports.register = async (req, res, next) => {
   const wallet_address = req.body.wallet_address;
   const user_name = req.body.user_name;
-  const avatar_url = req.body.avatar_url ?? "u";
+  const avatar_url = req.body.avatar_url ?? null;
   const password = req.body.password;
 
   try {
@@ -51,6 +51,7 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   const user_name = req.body.user_name;
   const password = req.body.password;
+  const wallet_address = req.body.wallet_address;
 
   try {
     const user = await User.findOne({
@@ -76,6 +77,7 @@ exports.login = async (req, res, next) => {
       message: "User logged in successfully",
       userId: user._id,
       token: token,
+      user,
     });
   } catch (err) {
     if (!err.statusCode) {
